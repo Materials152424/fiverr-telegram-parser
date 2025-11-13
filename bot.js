@@ -119,7 +119,7 @@ bot.on('callback_query', async (query) => {
   try {
     if (data === 'search_gigs') {
       const settings = userSettings[chatId] || { query: 'design', countries: ['US', 'GB', 'CA'] };
-      const countryNames = settings.countries.map(code => `${getFlag(code)} ${COUNTRIES[code] || code}`).join(', ');
+      const countryNames = (settings.countries || []).map(code => `${getFlag(code)} ${COUNTRIES[code] || code}`).join(', ');
 
       const keyboard = {
         inline_keyboard: [
@@ -154,9 +154,12 @@ bot.on('callback_query', async (query) => {
     } else if (data.startsWith('toggle_')) {
       const code = data.split('_')[1];
       if (!userSettings[chatId]) userSettings[chatId] = { countries: [] };
-      const idx = userSettings[chatId].countries.indexOf(code);
-      if (idx === -1) userSettings[chatId].countries.push(code);
-      else userSettings[chatId].countries.splice(idx, 1);
+      const idx = (userSettings[chatId].countries || []).indexOf(code);
+      if (idx === -1) {
+        userSettings[chatId].countries.push(code);
+      } else {
+        userSettings[chatId].countries.splice(idx, 1);
+      }
       saveData();
       await updateCountryKeyboard(chatId, query.message.message_id);
 
@@ -167,7 +170,7 @@ bot.on('callback_query', async (query) => {
 
     } else if (data === 'start_parsing') {
       const settings = userSettings[chatId];
-      if (!settings || !settings.query || !settings.countries.length) {
+      if (!settings || !settings.query || !(settings.countries || []).length) {
         await bot.sendMessage(chatId, 'Настрой запрос и страны!');
         return;
       }
@@ -219,7 +222,7 @@ bot.on('callback_query', async (query) => {
       });
     }
   } catch (err) {
-    console.error(err);
+    console.error("Ошибка:", err);
   }
 });
 
@@ -230,8 +233,8 @@ async function updateCountryKeyboard(chatId, messageId) {
   const codes = Object.keys(COUNTRIES);
   for (let i = 0; i < codes.length; i += 2) {
     const c1 = codes[i], c2 = codes[i + 1];
-    const t1 = `${settings.countries.includes(c1) ? '✅' : '⬜'} ${getFlag(c1)} ${COUNTRIES[c1]}`;
-    const t2 = c2 ? `${settings.countries.includes(c2) ? '✅' : '⬜'} ${getFlag(c2)} ${COUNTRIES[c2]}` : null;
+    const t1 = `${(settings.countries || []).includes(c1) ? '✅' : '⬜'} ${getFlag(c1)} ${COUNTRIES[c1]}`;
+    const t2 = c2 ? `${(settings.countries || []).includes(c2) ? '✅' : '⬜'} ${getFlag(c2)} ${COUNTRIES[c2]}` : null;
     const row = [{ text: t1, callback_data: `toggle_${c1}` }];
     if (t2) row.push({ text: t2, callback_data: `toggle_${c2}` });
     rows.push(row);
