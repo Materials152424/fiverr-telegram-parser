@@ -1,11 +1,10 @@
 {
   "name": "fiverr-parser",
   "version": "1.0.0",
-  "description": "Fiverr gig parser for Telegram",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js",
-    "postinstall": "npx playwright install --with-deps chromium"
+    "postinstall": "playwright install chromium"
   },
   "dependencies": {
     "node-telegram-bot-api": "^0.64.0",
